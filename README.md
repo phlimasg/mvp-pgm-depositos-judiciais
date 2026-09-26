@@ -151,39 +151,56 @@ Referência aos scripts: [Consulta Agendada - dados_djo](./bigquery/sql/gera_dad
 
 ## 5. Qualidade de Dados (Etapa 4.5)
 
-| Verificação  | O que foi avaliado                                                       | Resultado                                                                                                         |
-| ------------ | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| Completude   | Presença de `num_processo` vinculado ao PAV                              | 49.788 processos identificados sem vínculo, totalizando R$2,7 bilhões em valor atualizado (posição de 18/09/2026) |
-| Consistência | Formato de `num_processo` (padrão CNJ vs. formatos legados)              | `[preencher — % de registros fora do padrão CNJ]`                                                                 |
-| Unicidade    | Duplicidade de registros (mesmo processo, mesma conta, mesmo depósito)   | `[preencher]`                                                                                                     |
-| Acurácia     | `valor_resgatado` não pode exceder `valor_atualizado`; valores negativos | `[preencher]`                                                                                                     |
-| Outliers     | Depósitos com valor muito acima da média da mesma classe processual      | `[preencher]`                                                                                                     |
+| Verificação  | O que foi avaliado                                                       | Resultado                                                                                 |
+| ------------ | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Completude   | Presença de `num_processo` vinculado ao PAV                              | 49.788 processos identificados sem vínculo, totalizando R$2,7 bilhões em valor atualizado |
+| Consistência | Formato de `num_processo` (padrão CNJ vs. formatos legados)              | Uma média de 10% está fora do padrão CNJ, que inside em processos anteriores a 1998       |
+| Unicidade    | Duplicidade de registros (mesmo processo, mesma conta, mesmo depósito)   | Não foram identificadas duplicidades e sim depósitos complementares                       |
+| Acurácia     | `valor_resgatado` não pode exceder `valor_atualizado`; valores negativos | N/A                                                                                       |
+| Outliers     | Depósitos com valor muito acima da média da mesma classe processual      | `[preencher]`                                                                             |
 
 **Achado principal:** o cruzamento entre depósitos judiciais e o sistema PAV, que hoje já roda em produção como parte da pipeline, identificou historicamente processos sem número vinculado que resultaram na recuperação de mais de R$2 bilhões para o Município — evidenciando o impacto direto de um problema de qualidade de dados (falta de vínculo) sobre o resultado financeiro do órgão. Esse achado é a evidência central deste MVP de que verificação de qualidade de dados gera valor de negócio mensurável, não apenas conformidade técnica.
 
 **Evidência (screenshot):**
-Hoje o valor disponível é menor que R$ 2bi, pois já foi recuperado pela especializada, restando apenas uma média de 350mi de processos sem identificação.
 ![Imagem](./screenshots/ds2.png)
-[Apresentação do projeto na AB2L de 2026 - Youtube](https://www.youtube.com/watch?v=8Yt811dYNUY)
+Hoje o valor disponível é menor que R$ 2bi, pois já foi recuperado pelo municipio, restando apenas uma média de 350mi em processos sem identificação.
+
+**Vídeo de Apresentação na AB2L 2026**
+[![Apresentação do projeto na AB2L de 2026 - Youtube](https://img.youtube.com/vi/8Yt811dYNUY/0.jpg)](https://www.youtube.com/watch?v=8Yt811dYNUY)
 
 ---
 
-## 6. Análise de Dados (Etapa 4.1 e 4.5)
+## 6. Análise de Dados
 
 **Pergunta 1 — Saldo diário consolidado (a receber − a pagar):**
-`[consulta SQL + resultado + discussão]`
 
-**Pergunta 2 — Evolução mensal do valor acumulado em Convênio de Repasse:**
-`[consulta SQL + resultado + discussão]`
+Consulta:
+[Sql](./bigquery/sql/consolidado.sql)
 
-**Pergunta 3 — Volume diário de Depósitos Acolhidos e sazonalidade:**
-`[consulta SQL + resultado + discussão]`
+Resultado:
+Resultado (últimos 12 meses, posição de [data da consulta]):
 
-**Pergunta 4 — Processos sem vínculo PAV: quantidade e impacto financeiro:**
-Com base no BI atual (posição de 18/09/2026), foram identificados 49.788 processos sem vínculo com o sistema PAV, totalizando R$2,7 bilhões em valor atualizado. `[complementar com a evolução histórica desse número ao longo do último ano, se disponível, e discutir a tendência]`
+| qtd_dias_com_movimentacao | saldo_acumulado_periodo | saldo_medio_diario | dias_com_saldo_positivo | dias_com_saldo_negativo | maior_saldo_positivo_dia | maior_saldo_negativo_dia |
+| ------------------------- | ----------------------- | ------------------ | ----------------------- | ----------------------- | ------------------------ | ------------------------ |
+| 230                       | -342653420.82           | -1489797.48        | 55                      | 175                     | 22472036                 | -55076181.99             |
 
-**Pergunta 5 — Concentração de valores por Especializada/Classe Processual:**
-`[consulta SQL + resultado + discussão]`
+Ao longo dos últimos 12 meses, o Município apresentou saldo diário negativo em 76% dos dias com movimentação (175 de 230), resultando em um saldo acumulado de -R$342,6 milhões no período — ou seja, o valor total resgatado contra o governo (processos perdidos) superou em muito o valor resgatado a favor do governo (processos ganhos). Isso confirma que, no recorte analisado, o Município tende a ter mais perdas do que ganhos nos processos vinculados a depósitos judiciais, com uma média de -R$1,49 milhão por dia de movimentação.
+
+Vale destacar que essa distribuição não é uniforme: um único dia concentrou uma perda de R$55 milhões, valor muito acima do padrão diário observado — esse ponto foi tratado na seção de Qualidade de Dados como outlier a ser investigado, já que pode representar tanto uma decisão judicial legítima de alto valor quanto uma inconsistência no dado que merece verificação adicional antes de ser usada isoladamente em decisões orçamentárias.
+
+Esse resultado reforça a relevância da Pergunta 4 (processos sem vínculo PAV): parte do valor que hoje é registrado como "a pagar" pode estar represado ou mal contabilizado por falta de vínculo processual correto, o que pode distorcer ainda mais esse saldo já desfavorável ao Município.
+
+**Pergunta 2 — Volume médio e valor diário de Depósitos Acolhidos**
+
+Consulta [SQL](./bigquery/sql/media_valor_dia.sql)
+| media_periodo | valor_ultimo_dia | data_maxima |
+|------------------|------------------|---------------------|
+| R$1.077.125,48 | R$70.193,58 | 2026-09-18T00:00:00 |
+
+A analise reve que os depósitos diários, sempre são baixos e que há um período especifico do ano que temos o pico de depósitos.
+
+**Pergunta 3 — Processos sem vínculo PAV: quantidade e impacto financeiro:**
+Com base no BI atual (posição de 18/09/2026), foram identificados 10757 processos sem vínculo com o sistema PAV, totalizando R$350mi em valor atualizado. ![BI](./screenshots/ds2.png)
 
 **Discussão geral:** `[conectar as respostas ao problema original — ex: o quanto a falta de vínculo processual represa recursos que poderiam ser rapidamente resolvidos, e o que isso sugere para a gestão da Procuradoria]`
 

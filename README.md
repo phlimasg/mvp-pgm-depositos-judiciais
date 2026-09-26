@@ -153,7 +153,7 @@ Documentação da transformação principal:
 
 > "A consulta agendada no BigQuery cruza os registros de depósitos judiciais (réplica do PGMConnect) com a base de processos do sistema PAV pelo campo `num_processo`, classificando cada depósito como vinculado ou não vinculado. Os registros sem vínculo alimentam a tabela `dados_djo_sem_pav`, junto com os valores financeiros (`valor_principal`, `juros`, `correcao`, `valor_atualizado`, `valor_resgatado`)."
 
-Referência aos scripts: [Consulta Agendada - dados_djo](./bigquery/sql/gera_dados_djo.sql) - [Consulta Agendada - dados_djo_sem_pav](./bigquery/sql/gera_dados_djo_sem_pav.sql.sql)
+Referência aos scripts: [Consulta Agendada - dados_djo](./bigquery/sql/gera_dados_djo.sql) - [Consulta Agendada - dados_djo_sem_pav](./bigquery/sql/gera_dados_djo_sem_pav.sql)
 
 **Evidência (screenshot):**
 ![Agendamentos](./screenshots/gcp.png)

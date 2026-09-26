@@ -1,4 +1,7 @@
-## 1. Contexto de Negócio e Perguntas (Etapa 2 e 4.1)
+**Autor:** Raphael Lima | **Matricula:** 4052026000930 |
+**Disciplina:** Engenharia de Dados
+
+## 1. Contexto de Negócio e Perguntas
 
 ### Contexto
 
@@ -38,7 +41,7 @@ Dados administrativos de órgão público municipal, sujeitos à Lei de Acesso �
 
 ---
 
-## 2. Carga dos Dados (Etapa 4.2)
+## 2. Carga dos Dados
 
 O processo de coleta e carga acontece em múltiplas etapas:
 
@@ -62,7 +65,7 @@ Referência aos scripts:
 
 ---
 
-## 3. Modelagem e Catálogo de Dados (Etapa 4.3)
+## 3. Modelagem e Catálogo de Dados
 
 ### Modelo adotado
 
@@ -133,7 +136,7 @@ Os campos de CPF/CNPJ e nome sofrem anonimização por ofuscação antes da publ
 
 ---
 
-## 4. Pipeline de Dados (Etapa 4.4)
+## 4. Pipeline de Dados
 
 O pipeline é dividido em estágios que atravessam diferentes ferramentas, refletindo a arquitetura Medalhão mesmo sem estar tudo dentro de uma única plataforma:
 
@@ -160,7 +163,7 @@ Referência aos scripts: [Consulta Agendada - dados_djo](./bigquery/sql/gera_dad
 
 ---
 
-## 5. Qualidade de Dados (Etapa 4.5)
+## 5. Qualidade de Dados
 
 | Verificação      | O que foi avaliado                                                                        | Resultado / Problema Identificado                                                                                                    | Tratamento / Solução Aplicada                                                                                                                                                                                          |
 | :--------------- | :---------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -250,7 +253,3 @@ mvp-pgm-depositos-judiciais/
 ├── screenshots/        # evidências (com dados sensíveis ocultados)
 └── README.md
 ```
-
-**Autor:** Raphael Lima
-**Matricula:** 4052026000930
-**Disciplina:** Engenharia de Dados

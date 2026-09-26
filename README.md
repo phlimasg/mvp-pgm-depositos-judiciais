@@ -76,40 +76,53 @@ Esquema Estrela simplificado: uma tabela fato de movimentações judiciais, uma 
 
 #### Tabela `dados_djo` (dimensão de processos)
 
-| Campo                | Tipo    | Descrição                            | Domínio / Observação            |
-| -------------------- | ------- | ------------------------------------ | ------------------------------- |
-| `id`                 | INTEGER | Identificador único do registro      | Chave primária                  |
-| `num_processo`       | STRING  | Número do processo judicial          | Formato CNJ                     |
-| `cod_agencia`        | STRING  | Código da agência bancária vinculada | —                               |
-| `unidade_judiciaria` | STRING  | Vara/unidade judiciária responsável  | Categórico                      |
-| `autor`              | STRING  | Nome da parte autora                 | Anonimizado antes da publicação |
-| `cpf_cnpj_autor`     | STRING  | CPF/CNPJ da parte autora             | Anonimizado (hash)              |
-| `reu`                | STRING  | Nome da parte ré                     | Anonimizado antes da publicação |
-| `cpf_cnpj_reu`       | STRING  | CPF/CNPJ da parte ré                 | Anonimizado (hash)              |
+| Campo                | Tipo       | Modo       | Descrição                               | Domínio / Observações                   |
+| :------------------- | :--------- | :--------- | :-------------------------------------- | :-------------------------------------- |
+| `id`                 | `INTEGER`  | `NULLABLE` | Identificador único do registo          | Chave primária                          |
+| `num_processo`       | `STRING`   | `NULLABLE` | Número do processo judicial             | Formato padrão CNJ ou legado            |
+| `cod_agencia`        | `STRING`   | `NULLABLE` | Código da agência bancária vinculada    | Categórico (ex: agências BB)            |
+| `unidade_judiciaria` | `STRING`   | `NULLABLE` | Vara/unidade judiciária responsável     | Categórico                              |
+| `autor`              | `STRING`   | `NULLABLE` | Nome da parte autora                    | Anonimizado antes da publicação         |
+| `cpf_cnpj_autor`     | `STRING`   | `NULLABLE` | CPF/CNPJ da parte autora                | Anonimizado (hash SHA-256)              |
+| `reu`                | `STRING`   | `NULLABLE` | Nome da parte ré                        | Anonimizado antes da publicação         |
+| `cpf_cnpj_reu`       | `STRING`   | `NULLABLE` | CPF/CNPJ da parte ré                    | Anonimizado (hash SHA-256)              |
+| `conta`              | `STRING`   | `NULLABLE` | Conta bancária do depósito judicial     | Identificador da conta vinculada        |
+| `valor_principal`    | `NUMERIC`  | `NULLABLE` | Valor principal depositado              | Mínimo: 0                               |
+| `juros`              | `NUMERIC`  | `NULLABLE` | Juros acumulados                        | Mínimo: 0                               |
+| `correcao`           | `NUMERIC`  | `NULLABLE` | Correção monetária                      | Mínimo: 0                               |
+| `valor_atualizado`   | `NUMERIC`  | `NULLABLE` | Valor total atualizado                  | ≥ `valor_principal`                     |
+| `valor_resgatado`    | `NUMERIC`  | `NULLABLE` | Valor já resgatado                      | ≤ `valor_atualizado`                    |
+| `data_deposito`      | `DATETIME` | `NULLABLE` | Data do depósito judicial               | Formato `YYYY-MM-DD hh:mm:ss`           |
+| `parcela`            | `STRING`   | `NULLABLE` | Identificador de parcela, se houver     | Categórico                              |
+| `especializada`      | `STRING`   | `NULLABLE` | Vara especializada responsável          | Categórico (ex: Fazenda Pública, Cível) |
+| `sigla`              | `STRING`   | `NULLABLE` | Sigla do tribunal/órgão                 | Categórico (ex: TJRJ)                   |
+| `classeProcessual`   | `STRING`   | `NULLABLE` | Classe processual (tipo de ação)        | Categórico                              |
+| `data_djo`           | `DATETIME` | `NULLABLE` | Data de publicação no Diário da Justiça | Formato `YYYY-MM-DD hh:mm:ss`           |
+| `tipo_arquivo`       | `STRING`   | `NULLABLE` | Tipo de movimentação financeira         | Domínio: 1, 2, 3 ou 4 (ver Seção 1)     |
 
 #### Tabela `dados_djo_sem_pav` (fato — registros sem vínculo PAV)
 
-| Campo                      | Tipo     | Descrição                                               | Domínio / Observação     |
-| -------------------------- | -------- | ------------------------------------------------------- | ------------------------ |
-| `id`                       | INTEGER  | Identificador único                                     | Chave primária           |
-| `num_processo`             | STRING   | Número do processo                                      | Referência a `dados_djo` |
-| `cod_agencia`              | STRING   | Código da agência                                       | —                        |
-| `unidade_judiciaria`       | STRING   | Vara/unidade judiciária                                 | Categórico               |
-| `autor` / `cpf_cnpj_autor` | STRING   | Parte autora                                            | Anonimizado              |
-| `reu` / `cpf_cnpj_reu`     | STRING   | Parte ré                                                | Anonimizado              |
-| `conta`                    | STRING   | Conta bancária do depósito judicial                     | —                        |
-| `valor_principal`          | NUMERIC  | Valor principal depositado                              | Mín: 0                   |
-| `juros`                    | NUMERIC  | Juros acumulados                                        | Mín: 0                   |
-| `correcao`                 | NUMERIC  | Correção monetária                                      | Mín: 0                   |
-| `valor_atualizado`         | NUMERIC  | Valor total atualizado                                  | ≥ `valor_principal`      |
-| `valor_resgatado`          | NUMERIC  | Valor já resgatado                                      | ≤ `valor_atualizado`     |
-| `data_deposito`            | DATETIME | Data do depósito                                        | —                        |
-| `parcela`                  | STRING   | Identificador de parcela, se houver                     | —                        |
-| `especializada`            | STRING   | Vara especializada (ex: Fazenda Pública)                | Categórico               |
-| `sigla`                    | STRING   | Sigla do tribunal/órgão                                 | Categórico               |
-| `classeProcessual`         | STRING   | Classe processual (tipo de ação)                        | Categórico               |
-| `data_djo`                 | DATETIME | Data de publicação no Diário da Justiça                 | —                        |
-| `tipo_arquivo`             | STRING   | Tipo de movimentação (ver tabela de códigos na seção 1) | 1, 2, 3 ou 4             |
+| Campo                      | Tipo       | Descrição                                               | Domínio / Observação     |
+| -------------------------- | ---------- | ------------------------------------------------------- | ------------------------ |
+| `id`                       | `INTEGER ` | Identificador único                                     | Chave primária           |
+| `num_processo`             | `STRING  ` | Número do processo                                      | Referência a `dados_djo` |
+| `cod_agencia`              | `STRING  ` | Código da agência                                       | —                        |
+| `unidade_judiciaria`       | `STRING  ` | Vara/unidade judiciária                                 | Categórico               |
+| `autor` / `cpf_cnpj_autor` | `STRING  ` | Parte autora                                            | Anonimizado              |
+| `reu` / `cpf_cnpj_reu`     | `STRING  ` | Parte ré                                                | Anonimizado              |
+| `conta`                    | `STRING  ` | Conta bancária do depósito judicial                     | —                        |
+| `valor_principal`          | `NUMERIC ` | Valor principal depositado                              | Mín: 0                   |
+| `juros`                    | `NUMERIC ` | Juros acumulados                                        | Mín: 0                   |
+| `correcao`                 | `NUMERIC ` | Correção monetária                                      | Mín: 0                   |
+| `valor_atualizado`         | `NUMERIC ` | Valor total atualizado                                  | ≥ `valor_principal`      |
+| `valor_resgatado`          | `NUMERIC ` | Valor já resgatado                                      | ≤ `valor_atualizado`     |
+| `data_deposito`            | `DATETIME` | Data do depósito                                        | —                        |
+| `parcela`                  | `STRING  ` | Identificador de parcela, se houver                     | —                        |
+| `especializada`            | `STRING  ` | Vara especializada (ex: Fazenda Pública)                | Categórico               |
+| `sigla`                    | `STRING  ` | Sigla do tribunal/órgão                                 | Categórico               |
+| `classeProcessual`         | `STRING  ` | Classe processual (tipo de ação)                        | Categórico               |
+| `data_djo`                 | `DATETIME` | Data de publicação no Diário da Justiça                 | —                        |
+| `tipo_arquivo`             | `STRING  ` | Tipo de movimentação (ver tabela de códigos na seção 1) | 1, 2, 3 ou 4             |
 
 **Linhagem:** ambas as tabelas têm origem no scraping diário do Banco do Brasil → tratamento na API FastAPI → PostgreSQL (PGMConnect) → replicação via Airbyte → consulta agendada no BigQuery.
 Os campos de CPF/CNPJ e nome sofrem anonimização por ofuscação antes da publicação de qualquer material externo.

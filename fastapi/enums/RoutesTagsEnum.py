@@ -1,0 +1,32 @@
+from enum import Enum
+
+
+class RoutesTagsEnum(str, Enum):
+    BB = "BB - Comprovantes de pagamento do Banco do Brasil e DJO"
+    RH = "RH - Recursos Humanos"
+    HONORARIOS = "Honorarios - Recursos Humanos"
+    BCADASTRO = "BCadastro"
+    ACESSOS = "Acessos - Gerenciamento"
+    CARGA_INICIAL = "- Carga Inicial -"
+    INTRANET = "Intranet"
+    APLICACOES = "Aplicações - Configurações"
+    ROLES = "Roles - Consulta de Roles geral e usuários"
+    AUTH = "Auth - Autenticação"
+    AUTH_FAST = "- 1 Click Login -"
+    NOTIFICACOES = "Notificações"
+    REPORT = "Reports - Sugestões e Problemas"
+    CURSOS = "Cursos - Gestão de Cursos"
+    ACERVO = "Acervo - PGM"
+    DEV_TOOLS = "Dev Tools - Ferramentas de Desenvolvimento"
+    BUCKET = "Bucket - Upload de arquivos"
+    LOGS = "Logs - Auditoria"
+    PUBLIC = "Public - Arquivos públicos"
+    AUTO_JUDICIAL = "Auto Judicial - Banco de Auto Judicial"
+    TJRJ = "tjrj"
+    ATAS = "Atas - Atas de Reunião"
+    MIDIA_INDOOR = "Mídia Indoor - Painel de exibição"
+    TEST = "Test - Testes"
+    PAV_AUTOS = "Pav Autos - Indexação de Autos"
+    PAV_SERVICES = "Pav - Services"
+    CONFIGURACOES = "Configurações do Sistema",
+    IA = "Assistente de IA - PAV"

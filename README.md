@@ -12,11 +12,9 @@ Consolidar e monitorar a posição financeira da Procuradoria referente a valore
 
 ### Perguntas de negócio
 
-1. Qual o saldo diário consolidado (Resgates a Favor do Governo − Resgates Contra o Governo) da Procuradoria?
-2. Como evolui o valor acumulado em Convênio de Repasse de Depósitos (aguardando decisão judicial) mês a mês — está crescendo, estável ou caindo?
-3. Qual o volume (quantidade e valor) de Depósitos Acolhidos por dia, e há algum padrão de sazonalidade?
-4. Quantos processos e qual valor total estão sem vínculo com o sistema PAV?
-5. Existe concentração de valores por Especializada ou Classe Processual que mereça atenção da gestão?
+1 — Saldo diário consolidado (a receber − a pagar)
+2 — Volume médio e valor diário de Depósitos Acolhidos
+3 — Processos sem vínculo PAV: quantidade e impacto financeiro
 
 ### Dados brutos: origem e estrutura
 
@@ -166,6 +164,7 @@ Referência aos scripts: [Consulta Agendada - dados_djo](./bigquery/sql/gera_dad
 Hoje o valor disponível é menor que R$ 2bi, pois já foi recuperado pelo municipio, restando apenas uma média de 350mi em processos sem identificação.
 
 **Vídeo de Apresentação na AB2L 2026**
+
 [![Apresentação do projeto na AB2L de 2026 - Youtube](https://img.youtube.com/vi/8Yt811dYNUY/0.jpg)](https://www.youtube.com/watch?v=8Yt811dYNUY)
 
 ---
@@ -178,17 +177,13 @@ Consulta:
 [Sql](./bigquery/sql/consolidado.sql)
 
 Resultado:
-Resultado (últimos 12 meses, posição de [data da consulta]):
+Resultado (últimos 12 meses, posição de 18/09/2026):
 
 | qtd_dias_com_movimentacao | saldo_acumulado_periodo | saldo_medio_diario | dias_com_saldo_positivo | dias_com_saldo_negativo | maior_saldo_positivo_dia | maior_saldo_negativo_dia |
 | ------------------------- | ----------------------- | ------------------ | ----------------------- | ----------------------- | ------------------------ | ------------------------ |
 | 230                       | -342653420.82           | -1489797.48        | 55                      | 175                     | 22472036                 | -55076181.99             |
 
-Ao longo dos últimos 12 meses, o Município apresentou saldo diário negativo em 76% dos dias com movimentação (175 de 230), resultando em um saldo acumulado de -R$342,6 milhões no período — ou seja, o valor total resgatado contra o governo (processos perdidos) superou em muito o valor resgatado a favor do governo (processos ganhos). Isso confirma que, no recorte analisado, o Município tende a ter mais perdas do que ganhos nos processos vinculados a depósitos judiciais, com uma média de -R$1,49 milhão por dia de movimentação.
-
-Vale destacar que essa distribuição não é uniforme: um único dia concentrou uma perda de R$55 milhões, valor muito acima do padrão diário observado — esse ponto foi tratado na seção de Qualidade de Dados como outlier a ser investigado, já que pode representar tanto uma decisão judicial legítima de alto valor quanto uma inconsistência no dado que merece verificação adicional antes de ser usada isoladamente em decisões orçamentárias.
-
-Esse resultado reforça a relevância da Pergunta 4 (processos sem vínculo PAV): parte do valor que hoje é registrado como "a pagar" pode estar represado ou mal contabilizado por falta de vínculo processual correto, o que pode distorcer ainda mais esse saldo já desfavorável ao Município.
+Ao longo dos últimos 12 meses, o Município apresentou saldo diário negativo em 76% dos dias com movimentação (175 de 230), resultando num saldo acumulado de -R$342,6 milhões no período. O valor total resgatado contra o governo (processos perdidos) supera largamente o valor resgatado a favor (processos ganhos), com uma média de perda de -R$1,49 milhão por dia. A distribuição apresenta variações extremas, como a perda de R$55 milhões num único dia (potencial outlier ou pagamento de precatório de grande volume). Parte do valor "a pagar" pode estar distorcido pela falta de vínculo processual correto.
 
 **Pergunta 2 — Volume médio e valor diário de Depósitos Acolhidos**
 
@@ -202,13 +197,29 @@ A analise reve que os depósitos diários, sempre são baixos e que há um perí
 **Pergunta 3 — Processos sem vínculo PAV: quantidade e impacto financeiro:**
 Com base no BI atual (posição de 18/09/2026), foram identificados 10757 processos sem vínculo com o sistema PAV, totalizando R$350mi em valor atualizado. ![BI](./screenshots/ds2.png)
 
-**Discussão geral:** `[conectar as respostas ao problema original — ex: o quanto a falta de vínculo processual represa recursos que poderiam ser rapidamente resolvidos, e o que isso sugere para a gestão da Procuradoria]`
+**Discussão geral:**
+A integração dos dados do Banco do Brasil com o BigQuery expôs a verdadeira posição financeira da Procuradoria. Os resultados demonstram um cenário onde o Município perde, em média, R$ 1,49 milhões diários em litígios consolidados, enquanto simultaneamente possui R$ 350 milhões represados em processos ganhos (ou em andamento) que não podem ser resgatados simplesmente porque o depósito judicial não está corretamente referenciado no sistema interno (PAV).
+
+Isto prova que a falta de vínculo processual compromete a liquidez do órgão. A criação desta pipeline analítica transitou o setor de um cenário "operacional cego" para uma gestão orientada a dados, permitindo à Procuradoria priorizar ativamente a identificação processual daqueles R$ 350 milhões, mitigando as perdas diárias.
 
 ---
 
 ## 7. Autoavaliação
 
-`[Discussão sobre quais perguntas foram totalmente respondidas, quais não foram e por quê, dificuldades técnicas encontradas — ex: integração entre FastAPI/Postgres/Airbyte/BigQuery, volume de dados (~7GB), anonimização de dados sensíveis — e trabalhos futuros, como aprofundar o BI evolutivo hoje pouco utilizado.]`
+**Objetivos Atingidos e Não Atingidos:**
+Todas as perguntas de negócio propostas foram respondidas com êxito através da arquitetura desenvolvida. Conseguimos automatizar a extração dos 5 ficheiros diários do Banco do Brasil, garantir o parsing rigoroso através da FastAPI e consolidar as visões na nuvem (BigQuery/Looker).
+
+Dificuldades Técnicas:
+
+Integração do ecossistema: Orquestrar o ciclo completo (Scraping → FastAPI → Postgres → Airbyte → BigQuery) exigiu lidar com diferentes falhas de rede e timeouts de sessão bancária, especialmente na etapa de coleta (resolvido com mecanismos de retry e validação).
+
+Qualidade dos Dados de Origem: Os ficheiros do banco frequentemente trazem números de processo fora do padrão CNJ (processos físicos antigos) ou ausentes, forçando-nos a desenvolver expressões regulares complexas na camada Bronze/Silver para não perder o dado financeiro associado.
+
+Trabalhos Futuros:
+
+Evoluir o dashboard (Looker Studio) para explorar séries temporais longas (5 a 10 anos), aproveitando a camada Gold do BigQuery.
+
+Implementar algoritmos de Machine Learning na pipeline para prever a probabilidade de vitória/derrota com base na Vara Judiciária e tentar cruzar automaticamente os processos sem vínculo PAV (através do nome das partes).
 
 ---
 
@@ -226,3 +237,7 @@ mvp-pgm-depositos-judiciais/
 ├── screenshots/        # evidências (com dados sensíveis ocultados)
 └── README.md
 ```
+
+**Autor:** Raphael Lima
+**Matricula:** 4052026000930
+**Disciplina:** Engenharia de Dados
